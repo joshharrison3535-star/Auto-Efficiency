@@ -1,0 +1,25 @@
+.DS_Store
+__pycache__/
+.vehicle_image_cache/
+.streamlit/
+
+# Generated duplicate artifacts and oversized copied models
+* copy.py
+* copy.ipynb
+* copy.parquet
+* copy.csv
+* copy.zip
+* copy.pkl
+* copy.png
+* copy.jpg
+* copy.pt
+
+# Local notebooks and docs not needed for deploy
+AutomotiveEfficiency.ipynb
+Fuel_Economy_Starter.ipynb
+memo.md
+verification_assessment.md
+README.md
+
+# Original raw dataset not needed at runtime
+vehicles.csv

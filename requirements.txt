@@ -1,0 +1,10 @@
+streamlit==1.55.0
+pandas>=2.3
+numpy>=2.3
+joblib>=1.5
+Pillow>=11.0
+scikit-learn>=1.8
+ollama>=0.5
+duckduckgo-search>=6.0
+ultralytics>=8.4
+requests>=2.32
