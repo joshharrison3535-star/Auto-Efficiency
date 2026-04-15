@@ -13,11 +13,6 @@ from sklearn.metrics.pairwise import cosine_similarity
 import ollama
 from duckduckgo_search import DDGS
 
-try:
-    from ultralytics import YOLO
-except ImportError:
-    st.error("ultralytics package not installed.")
-
 st.set_page_config(page_title="Fuel Economy Dashboard", layout="wide")
 
 IMAGE_CACHE_DIR = Path(__file__).resolve().parent / ".vehicle_image_cache"
@@ -38,6 +33,13 @@ def load_models():
 
 @st.cache_resource
 def load_yolo():
+    try:
+        from ultralytics import YOLO
+    except ImportError as exc:
+        raise RuntimeError(
+            "ultralytics or one of its dependencies could not be imported."
+        ) from exc
+
     return YOLO('yolov8n.pt')
 
 @st.cache_resource
@@ -117,23 +119,29 @@ def main():
     st.sidebar.header("Step 1: Verify car Image")
     uploaded_file = st.sidebar.file_uploader("Upload car driving image", type=['png', 'jpg', 'jpeg'])
     if uploaded_file is not None:
-        yolo_model = load_yolo()
-        image = Image.open(uploaded_file)
-        results = yolo_model(image)
-        car_detected = False
-        boxes = []
-        for result in results:
-            for box in result.boxes:
-                if int(box.cls[0]) == 2: # COCO id 2 is car
-                    car_detected = True
-                    boxes.append(box)
-                    
-        if car_detected:
-            st.sidebar.success("Car detected!")
-            res_plotted = results[0].plot()
-            st.sidebar.image(res_plotted, caption="YOLO Detection")
-        else:
-            st.sidebar.error("Warning: No car detected in the image.")
+        try:
+            yolo_model = load_yolo()
+        except Exception as exc:
+            st.sidebar.error(f"YOLO detection is unavailable in this deployment: {exc}")
+            yolo_model = None
+
+        if yolo_model is not None:
+            image = Image.open(uploaded_file)
+            results = yolo_model(image)
+            car_detected = False
+            boxes = []
+            for result in results:
+                for box in result.boxes:
+                    if int(box.cls[0]) == 2: # COCO id 2 is car
+                        car_detected = True
+                        boxes.append(box)
+
+            if car_detected:
+                st.sidebar.success("Car detected!")
+                res_plotted = results[0].plot()
+                st.sidebar.image(res_plotted, caption="YOLO Detection")
+            else:
+                st.sidebar.error("Warning: No car detected in the image.")
             
     # 3. Flexible Inputs (Year -> Make -> Model) displayed collectively
     st.sidebar.header("Step 2: Select Vehicle")
